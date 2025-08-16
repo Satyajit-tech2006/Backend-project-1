@@ -2,23 +2,24 @@ import express from "express";
 import dotenv from "dotenv";
 import connectDB from "./db/index.js";
 
-dotenv.config({ path: "./.env" }); // 👈 make sure it points to your .env file
+dotenv.config({ path: "./.env" }); // load env variables
 
 const app = express();
 
 // connect DB
-connectDB();
- then(() => {
+connectDB()
+  .then(() => {
     app.on("error", (err) => {
-        console.error("Server error:", err);
+      console.error("Server error:", err);
     });
-    app.listen(process.env.PORT , () => {
+
+    app.listen(process.env.PORT, () => {
       console.log(`Server running on port ${process.env.PORT}`);
     });
-})
-.catch((error) => {
+  })
+  .catch((error) => {
     console.error("Error starting the server:", error);
-}
+  });
 
 
 
