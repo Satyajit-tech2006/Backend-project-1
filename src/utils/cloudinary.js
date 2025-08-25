@@ -1,41 +1,37 @@
-import {v2 as cloudinary} from 'cloudinary';
-import fs from 'fs';
+import { v2 as cloudinary } from "cloudinary";
+import { log } from "console";
+import fs from "fs";
+import path from "path";
 
 cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
-    });
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 const uploadOnCloudinary = async (filePath) => {
-    try {
-        if (!filePath) {
-            return null;
+  if (!filePath) return null;
 
-            const response= await cloudinary.uploader.upload(filePath,{
-                resource_type: "auto"
-            })
-            console.log("Image uploaded successfully:", response.url);
-            return response.url;
-        }
-    } catch (error) {
-        fs.unlinkSync(filePath); // Delete the file if upload fails
-        return null;
+  // Ensure path uses forward slashes (Windows fix)
+  const normalizedPath = path.resolve(filePath).replace(/\\/g, "/");
+
+  try {
+    const response = await cloudinary.uploader.upload(normalizedPath, {
+      resource_type: "auto",
+    });
+    console.log("✅ Image uploaded successfully:", response.secure_url);
+    return response.secure_url;
+  } catch (error) {
+    console.error("❌ Cloudinary upload failed:", error);
+    throw error;
+  } finally {
+    if (fs.existsSync(filePath)) {
+      fs.unlink(filePath, (err) => {
+        if (err) console.error("Failed to delete temp file:", err.message);
+        else console.log("🗑️ Temp file deleted:", filePath);
+      });
     }
-}
-
-
-
-cloudinary.v2.uploader.upload("public/images/sample.jpg",
-    {
-        public_id: "sample_image"
-    },function(error, result) {
-        if (error) {
-            console.error("Error uploading image:", error);
-        } else {
-            console.log("Image uploaded successfully:", result);
-        }
-    }
-)
-
+  }
+};
+console.log("Cloudinary key:", process.env.CLOUDINARY_API_KEY);
 export default uploadOnCloudinary;

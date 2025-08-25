@@ -1,9 +1,9 @@
 const asyncHandler = (fn) => (req, res, next) => {
-    Promise.resolve(req,res, next).catch((error) => next(error));
-}
-
+    Promise.resolve(fn(req, res, next)).catch(next);
+};
 
 export default asyncHandler;
+
 // This utility function wraps an asynchronous function (like an Express route handler)
 // and catches any errors that occur during its execution, passing them to the next middleware.
 
